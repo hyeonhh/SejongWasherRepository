@@ -23,6 +23,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -52,6 +53,7 @@ import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.ValueEventListener
 import com.google.firebase.database.database
+import kotlinx.coroutines.time.delay
 import java.util.Calendar
 import java.util.Date
 
@@ -123,41 +125,28 @@ fun WasherCard(
     washer: Washer,
     modifier: Modifier = Modifier
 ) {
-
+    val context = LocalContext.current
     var updatedTime by remember { mutableStateOf("") }
     var isFirebaseDataAvailable by remember { mutableStateOf(false) }
+    var showToast by remember {
+        mutableStateOf(false)
+    }
 
     val myRef = createWasherReference(washer.washerId)
 
-    fun isCurrentTimeEqualsCompletionTime(comletionTime:String):Boolean{
+
+    fun isCurrentTimeEqualsCompletionTime(completionTime:String):Boolean{
         try {
-            val dateFormat = SimpleDateFormat("HH:mm")
-            val parsedTime = dateFormat.parse(comletionTime)
-            val currentTime = Calendar.getInstance().time
+           val currentTime = SimpleDateFormat("HH:mm").format(Calendar.getInstance().time)
 
-            // 시, 분, 초를 0으로 설정하여 날짜 부분을 무시하고 시간만 비교
-            val calendar = Calendar.getInstance()
-            calendar.time = currentTime
-            calendar.set(Calendar.YEAR, 0)
-            calendar.set(Calendar.MONTH, 0)
-            calendar.set(Calendar.DAY_OF_MONTH, 0)
-
-            val calendarParsedTime = Calendar.getInstance()
-            calendarParsedTime.time = parsedTime
-            calendarParsedTime.set(Calendar.YEAR, 0)
-            calendarParsedTime.set(Calendar.MONTH, 0)
-            calendarParsedTime.set(Calendar.DAY_OF_MONTH, 0)
-
-
-            Log.d("시간이 맞나?","${calendarParsedTime.time}")
-
-            return calendar.time == calendarParsedTime.time
+            return currentTime==completionTime
         } catch (e: Exception) {
             e.printStackTrace()
             return false
         }
 
     }
+
 
     @Composable
     fun showToast() {
@@ -174,11 +163,12 @@ fun WasherCard(
                 val startDate = SimpleDateFormat("HH:mm").parse(washerStartTime)
                 val updateDate = Calendar.getInstance().apply {
                     time=startDate
-                    add(Calendar.MINUTE,45)
+                    add(Calendar.MINUTE,5)
                 }.time
 
+                Log.d("완료 시간", updateDate.toString())
+
                 updatedTime = SimpleDateFormat("HH:mm").format(updateDate)
-                isFirebaseDataAvailable=true
 
 
             }
@@ -190,14 +180,27 @@ fun WasherCard(
 
     })
 
-    if(isCurrentTimeEqualsCompletionTime(updatedTime)) {
-        showToast()
+
+
+    LaunchedEffect(updatedTime){
+        while(true) {
+            if(isCurrentTimeEqualsCompletionTime(updatedTime)){
+                Log.d("시간이 맞아", "${washer.washerId}번의 세탁기 완료됨")
+                showToast = true
+                isFirebaseDataAvailable=true
+                break
+            }
+            Log.d("안맞아","시간이 안맞아")
+            kotlinx.coroutines.delay(1000*60)
+
+        }
     }
-
-
-
-
-
+if(showToast) {
+    Handler(Looper.getMainLooper()).postDelayed({
+        showToast=false
+    },500)
+    showToast()
+}
 
 
     Card(

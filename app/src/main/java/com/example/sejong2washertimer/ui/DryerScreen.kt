@@ -30,13 +30,12 @@ fun DryerList(
     modifier: Modifier = Modifier
 ) {
     Column {
-        LazyVerticalGrid(
-            columns = GridCells.Adaptive(minSize = 128.dp),
+        LazyColumn(
             modifier = modifier) {
             items(dryerList) {
                     dryer -> DryerCard(
                 dryer = dryer,
-                modifier= Modifier.padding(8.dp)
+                modifier= Modifier.padding(10.dp)
             )
             }
         }
@@ -49,14 +48,13 @@ fun DryerCard(
 ){
     Card {
         Row(
-            horizontalArrangement= Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically
         ) {
-
             Image(painter = painterResource(id = dryer.dryerImageResourceId),
                 contentDescription = stringResource(id = dryer.dryerResourceId),
                 contentScale = ContentScale.Crop
             )
+            Spacer(modifier = Modifier.size(5.dp))
             Text(
                 text = stringResource(id = dryer.dryerResourceId),
             )

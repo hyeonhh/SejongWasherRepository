@@ -1,5 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
+    <style name="Theme.Sejong2WasherTimer.Splash" parent="Theme.SplashScreen">
+
+
+    </style>
+
     <style name="Theme.Sejong2WasherTimer" parent="android:Theme.Material.Light.NoActionBar" />
 </resources>
+

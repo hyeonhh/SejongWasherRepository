@@ -4,12 +4,13 @@ package com.example.sejong2washertimer.ui
 import android.annotation.SuppressLint
 import android.content.Context.*
 import android.icu.text.SimpleDateFormat
+import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
@@ -19,10 +20,8 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -41,11 +40,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavController
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
-import com.example.sejong2washertimer.IntroScreen
 import com.example.sejong2washertimer.R
 import com.example.sejong2washertimer.data.Datasource
 import com.example.sejong2washertimer.fcm.NotiModel
@@ -62,18 +56,19 @@ import com.google.firebase.database.database
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import timber.log.Timber
+import java.time.LocalDate
+import java.time.LocalDateTime
 import java.util.Calendar
 
 
-@OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun WasherApp() {
+fun WasherApp(viewModel: WasherViewModel=viewModel()) {
     WasherList(
-
-        washerList = Datasource().washers
-    )
-    }
+        washerList = Datasource().washers,
+        viewModel = viewModel)
+}
 
 
 
@@ -81,13 +76,15 @@ fun WasherApp() {
 @Composable
 fun WasherList(
     washerList: List<Washer>,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    viewModel: WasherViewModel
 ) {
     LazyColumn(
         modifier=modifier
     ) {
         items(washerList) {
                 washer -> WasherCard(
+            viewModel = viewModel,
             washer = washer,
             modifier= Modifier
                 .padding(10.dp)
@@ -107,16 +104,15 @@ fun createWasherReference(washerId: String?): DatabaseReference {
 
 
 
-@OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun WasherCard(
     washer: Washer,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    viewModel: WasherViewModel
 ) {
 
     var updatedTime by remember { mutableStateOf("") }
-    var showToast by remember {
-        mutableStateOf(false)
+    var showToast by remember { mutableStateOf(false)
     }
     val myRef = createWasherReference(washer.washerId)
 
@@ -135,7 +131,6 @@ fun WasherCard(
 
 
     myRef.addValueEventListener(object : ValueEventListener {
-
         override fun onDataChange(snapshot: DataSnapshot) {
             val washerStartTime = snapshot.getValue(String::class.java)
             if(washerStartTime!= null)    {
@@ -147,11 +142,20 @@ fun WasherCard(
 
                 updatedTime = SimpleDateFormat("HH:mm").format(updateDate)
 
+                viewModel.setWasherFinishTime(washerId = washer.washerId, finishTime = updatedTime)
+                viewModel.setWasherState(washer.washerId,false)
 
-                if(isCurrentTimeEqualsCompletionTime(updatedTime)){
-                    washer.isAvailable=true
+                //todo :2
+                if (isCurrentTimeEqualsCompletionTime(updatedTime)){
+                    Log.d("${washer.washerId}완료시간", viewModel.getWasherState(washer.washerId).toString())
+                    viewModel.setWasherState(washer.washerId,true)
+                    Log.d("${washer.washerId}완료시간 상태 변경 후 ", viewModel.getWasherState(washer.washerId).toString())
+
+
                 }
-
+            }
+            else {
+                viewModel.setWasherState(washer.washerId,true)
             }
         }
 
@@ -163,17 +167,12 @@ fun WasherCard(
 
 
 
-    LaunchedEffect(updatedTime){
-            while(true) {
-                if(isCurrentTimeEqualsCompletionTime(updatedTime)){
-                    showToast = true
-                    washer.isAvailable=true
-                    break
-                }
-
-                kotlinx.coroutines.delay(1000*60)
-
+    LaunchedEffect(washer.washerId) {
+        while (!isCurrentTimeEqualsCompletionTime(updatedTime)) {
+            kotlinx.coroutines.delay(1000)
         }
+        showToast = true
+        viewModel.setWasherState(washer.washerId, true)
     }
 
     if(showToast) {
@@ -190,6 +189,9 @@ fun WasherCard(
                 // TODO: 토큰 저장 후 해당 토큰을 넣어주는 로직 추가 필요
                 val pushModel = PushNotification(notiModel)
                 pushWasherCompleted(pushModel)
+                viewModel.setWasherState(washer.washerId,true)
+                myRef.removeValue()
+
             } catch (e: Exception) {
                 e.printStackTrace()
                 Log.e("FCM", "FCM 전송 중 예외 발생: ${e.message}")
@@ -219,15 +221,16 @@ fun WasherCard(
             )
             Spacer(modifier = Modifier.size(30.dp))
 
+//todo: 상태값이 사용되는 부분
+            if (viewModel.getWasherState(washer.washerId)) {
+                    WasherCardClickableContent(
+                        washer = washer,
+                        viewModel = viewModel
+                    )
 
-            if (washer.isAvailable) {
-                WasherCardClickableContent(washer = washer, updatedTime = updatedTime)
-//                {
-//                    isFirebaseDataAvailable=it
-//                }
             }
             else{
-                Text(text = "완료 시간 : ${updatedTime}",
+                Text(text = "완료 시간 : ${viewModel.getWasherFinishTime(washer.washerId)}",
                     style = TextStyle(fontSize = 13.sp,
                         fontWeight = FontWeight.Bold
                     )
@@ -248,15 +251,11 @@ fun WasherCard(
 
 @Composable
 fun WasherCardClickableContent(
+    viewModel: WasherViewModel,
     washer: Washer,
-    updatedTime: String,
 ) {
 
-
-
-    val showDialog = remember { mutableStateOf(false) }
-
-
+    var showDialog by remember { mutableStateOf(false) }
     val myRef = createWasherReference(washer.washerId)
 
     fun saveCurrentTimeDatabase() {
@@ -265,25 +264,20 @@ fun WasherCardClickableContent(
         myRef.setValue( formattedTime)
 
     }
-    if (showDialog.value) {
+    if (showDialog) {
         // AlertDialog 호출
         StartWasherAlertDialog(
             dialogTitle = "${washer.washerId}번 세탁기 시작",
             dialogText =" 50분동안 세탁이 진행되어요! 세탁을 시작할까요?" ,
             onConfirm = {
-                // TODO: 세탁 시작 시 필요한 작업 수행
                 saveCurrentTimeDatabase()
-                washer.isAvailable=false
-                showDialog.value = false
-
-//                setIsFirebaseDataAvailable(true)
-
+                showDialog = false
+                viewModel.setWasherState(washerId = washer.washerId, isAvailable = false)
 
 
             },
             onDismiss = {
-                // TODO: 세탁 취소 시 필요한 작업 수행
-                showDialog.value = false
+                showDialog = false
 //                setIsFirebaseDataAvailable(false)
 
             }
@@ -293,14 +287,15 @@ fun WasherCardClickableContent(
     // Washer가 사용 가능한 상태일 때 클릭하면 AlertDialog 호출
     Spacer(modifier = Modifier.size(10.dp))
 
-    if(washer.isAvailable) {
+    //todo : 상태값이 사용되는 부분
+    if(viewModel.getWasherState(washerId = washer.washerId)) {
         Image(
             painter = painterResource(id = R.drawable.playicon),
             contentDescription = null,
             modifier = Modifier
                 .size(50.dp)
                 .clickable {
-                    showDialog.value = true
+                    showDialog = true
 
                 }
         )
@@ -314,7 +309,7 @@ fun WasherCardClickableContent(
     }
     else{
         Text(
-            text = "완료 시간 : $updatedTime",
+            text = "완료 시간 : ${viewModel.getWasherFinishTime(washer.washerId)}",
             style = TextStyle(fontSize = 13.sp, fontWeight = FontWeight.Bold)
         )
     }
@@ -374,5 +369,6 @@ private fun pushWasherCompleted(notification:PushNotification)= CoroutineScope(D
     }
 
 }
+
 
 

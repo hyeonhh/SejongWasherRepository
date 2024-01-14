@@ -69,7 +69,6 @@ import timber.log.Timber
 
 enum class RoutingScreen() {
     Setting,
-    Intro,
     Washer,
     Dryer,
     Charge
@@ -79,17 +78,15 @@ class MainActivity : ComponentActivity() {
 
 
     private lateinit var navController: NavHostController
-
     private lateinit var databaseReference : DatabaseReference
     @OptIn(ExperimentalMaterial3Api::class)
     @SuppressLint("SuspiciousIndentation", "UnusedMaterial3ScaffoldPaddingParameter")
     override fun onCreate(savedInstanceState: Bundle?) {
 
         super.onCreate(savedInstanceState)
-        FirebaseApp.initializeApp(applicationContext)
+        FirebaseApp.initializeApp(this)
         val firebaseDatabase: FirebaseDatabase = FirebaseDatabase.getInstance()
         databaseReference = firebaseDatabase.getReference("timer")
-        val washerViewModel by viewModels<WasherViewModel>()
 
 
         //todo : 추후 스플래시 화면에서 token 받도록 로직 이동 필요

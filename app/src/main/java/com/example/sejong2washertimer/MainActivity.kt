@@ -8,6 +8,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.BottomNavigation
@@ -39,6 +40,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
@@ -48,7 +50,9 @@ import androidx.navigation.compose.rememberNavController
 import com.example.sejong2washertimer.data.Datasource
 import com.example.sejong2washertimer.ui.CardChargeScreen
 import com.example.sejong2washertimer.ui.DryerApp
-import com.example.sejong2washertimer.ui.Greeting2
+import com.example.sejong2washertimer.ui.MoneyInfo
+import com.example.sejong2washertimer.ui.MoneyLeft
+import com.example.sejong2washertimer.ui.MoneyUsageList
 import com.example.sejong2washertimer.ui.SettingApp
 import com.example.sejong2washertimer.ui.SettingScreen
 import com.example.sejong2washertimer.ui.WasherApp
@@ -122,7 +126,13 @@ class MainActivity : ComponentActivity() {
                 }
 
                 composable(RoutingScreen.Charge.name){
-                    Greeting2()
+                    Column {
+                        MoneyLeft()
+                        MoneyInfo()
+                        MoneyUsageList(usageContent = "세탁","-1300월",R.drawable.baseline_local_laundry_service_24)
+                        MoneyUsageList(usageContent = "건조","-1300월",R.drawable.baseline_dry_cleaning_24)
+                        MoneyUsageList(usageContent = "충전","+5000원",R.drawable.baseline_monetization_on_24)
+                    }
 
                 }
             }

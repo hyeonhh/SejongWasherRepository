@@ -11,6 +11,7 @@ import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
@@ -37,6 +38,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -46,6 +48,7 @@ import com.example.sejong2washertimer.fcm.NotiModel
 import com.example.sejong2washertimer.fcm.PushNotification
 import com.example.sejong2washertimer.fcm.RetrofitInstance
 import com.example.sejong2washertimer.model.Washer
+import com.example.sejong2washertimer.ui.ui.theme.Sejong2WasherTimerTheme
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.firebase.Firebase
 import com.google.firebase.database.DataSnapshot
@@ -273,7 +276,7 @@ fun WasherCardClickableContent(
                 saveCurrentTimeDatabase()
                 showDialog = false
                 viewModel.setWasherState(washerId = washer.washerId, isAvailable = false)
-
+                //todo : 세탁 금액 차감 , 이력에 추가
 
             },
             onDismiss = {
@@ -342,7 +345,13 @@ fun StartWasherAlertDialog(
     )
 }
 
-
+@Preview(showBackground = true)
+@Composable
+fun GreetingPreview() {
+    Sejong2WasherTimerTheme {
+        WasherApp()
+    }
+}
 
 
 

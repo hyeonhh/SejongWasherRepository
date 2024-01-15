@@ -40,7 +40,6 @@ class SettingScreen : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             Sejong2WasherTimerTheme {
-                // A surface container using the 'background' color from the theme
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
@@ -56,6 +55,10 @@ class SettingScreen : ComponentActivity() {
 fun SettingApp(modifier: Modifier=Modifier) {
     var washerChecked by remember { mutableStateOf(true) }
     var dryerChecked by remember {
+        mutableStateOf(true)
+    }
+
+    var ischarged by remember {
         mutableStateOf(true)
     }
     Column(
@@ -74,12 +77,9 @@ fun SettingApp(modifier: Modifier=Modifier) {
             fontSize = 12.sp
         )
         Spacer(modifier = Modifier.padding(10.dp))
-        Text(text = "세탁 알림 수신",
-            fontSize = 12.sp)
-        Text(text = "세탁이 완료되면 아래와 같이 팝업을 통해 알려드려요!",
-            fontSize=10.sp,
-            color = Color.Gray
-            )
+        Text(text = "세탁 알림 수신", fontSize = 12.sp)
+        Text(text = "세탁이 완료되면 알림을 보내드려요!",fontSize=10.sp, color = Color.Gray
+        )
 
 
         Card(
@@ -129,10 +129,46 @@ fun SettingApp(modifier: Modifier=Modifier) {
                 )
             }
         }
+
+        Text(text = "잔액 알림 수신",
+            fontSize = 12.sp)
+        Text(text = "세탁 카드 잔액에 맞추어 충전 시기를 알려드려요!",
+            fontSize=10.sp,
+            color = Color.Gray
+        )
+        Card(
+            modifier =modifier
+                .padding(10.dp)
+        ) {
+            Row(
+                modifier=modifier
+                    .padding(5.dp)
+            ) {
+                Column {
+                    Text(text = "\uD83E\uDE99이번이 마지막 세탁이에요! ",
+                        fontSize=12.sp)
+                    Text(text = "카드를  충전해주세요",
+                        fontSize=10.sp)
+                }
+                Spacer(modifier = modifier.width(40.dp))
+                Switch(
+                    modifier = modifier
+                        .align(Alignment.CenterVertically),
+                    checked = ischarged, onCheckedChange = { ischarged = it }
+
+                )
+            }
+        }
+
     }
 
 
+
+
+
 }
+
+
 
 @Preview
 @Composable

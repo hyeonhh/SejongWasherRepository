@@ -49,6 +49,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.sejong2washertimer.data.Datasource
 import com.example.sejong2washertimer.ui.CardChargeScreen
+import com.example.sejong2washertimer.ui.ChargeViewModel
 import com.example.sejong2washertimer.ui.DryerApp
 import com.example.sejong2washertimer.ui.MoneyInfo
 import com.example.sejong2washertimer.ui.MoneyLeft
@@ -79,7 +80,6 @@ enum class RoutingScreen() {
 }
 
 class MainActivity : ComponentActivity() {
-
 
     private lateinit var navController: NavHostController
     private lateinit var databaseReference : DatabaseReference
@@ -127,7 +127,7 @@ class MainActivity : ComponentActivity() {
 
                 composable(RoutingScreen.Charge.name){
                     Column {
-                        MoneyLeft()
+                        MoneyLeft(viewModel = ChargeViewModel())
                         MoneyInfo()
                         MoneyUsageList(usageContent = "세탁","-1300월",R.drawable.baseline_local_laundry_service_24)
                         MoneyUsageList(usageContent = "건조","-1300월",R.drawable.baseline_dry_cleaning_24)

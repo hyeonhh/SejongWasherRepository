@@ -1,15 +1,13 @@
 package com.example.sejong2washertimer.ui
 
-import android.util.Log
+import androidx.compose.runtime.MutableIntState
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.State
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
-import androidx.lifecycle.MutableLiveData
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
-import com.example.sejong2washertimer.model.Washer
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import timber.log.Timber
 
 class WasherViewModel() : ViewModel(
@@ -37,8 +35,5 @@ class WasherViewModel() : ViewModel(
     }
 
 
-    fun resetWasherData(washerId: String) {
 
-
-    }
 }

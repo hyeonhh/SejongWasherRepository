@@ -224,7 +224,6 @@ fun WasherCard(
             )
             Spacer(modifier = Modifier.size(30.dp))
 
-//todo: 상태값이 사용되는 부분
             if (viewModel.getWasherState(washer.washerId)) {
                     WasherCardClickableContent(
                         washer = washer,

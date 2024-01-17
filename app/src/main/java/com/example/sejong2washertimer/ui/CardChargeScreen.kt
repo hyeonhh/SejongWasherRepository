@@ -26,6 +26,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -33,6 +34,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
@@ -43,6 +45,9 @@ import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.sejong2washertimer.R
 import com.example.sejong2washertimer.ui.ui.theme.Sejong2WasherTimerTheme
+
+
+
 
 class CardChargeScreen : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -66,10 +71,10 @@ class CardChargeScreen : ComponentActivity() {
 
 @Composable
 fun CardChargeApp() {
+    val context = LocalContext.current
 
         Column {
-            MoneyLeft(viewModel = ChargeViewModel())
-            MoneyInfo()
+            MoneyLeft(viewModel = ChargeViewModel(context))
             MoneyUsageList(usageContent = "세탁","-1300월",R.drawable.baseline_local_laundry_service_24)
             MoneyUsageList(usageContent = "건조","-1300월",R.drawable.baseline_dry_cleaning_24)
             MoneyUsageList(usageContent = "충전","+5000원",R.drawable.baseline_monetization_on_24)
@@ -82,14 +87,21 @@ fun MoneyLeft(
     modifier: Modifier = Modifier,
     viewModel: ChargeViewModel
 ) {
+
     var showDialog by remember { mutableStateOf(false) }
+    val chargedMoney by viewModel.chargedMoneyFlow.collectAsState(initial = 0)
+
+
+    Column(
+        modifier = modifier
+    ) {
 
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = modifier.padding(10.dp)
     ) {
 
-        Text("남은 금액 : ${viewModel.chargedMoney}원")
+        Text("남은 금액 : ${chargedMoney}원")
 
         Spacer(modifier = Modifier.width(16.dp))
         Button(
@@ -101,6 +113,21 @@ fun MoneyLeft(
         ) {
             Text(text = "채우기")
         }
+    }
+        Text(
+            "앞으로 세탁을 ${chargedMoney.div(1300)}번 더 할 수 있어요",
+            fontSize = 10.sp,
+            textAlign = TextAlign.Center
+        )
+
+        Text(
+            "앞으로 세탁 & 건조를 ${chargedMoney.div(2600)}번 더 할 수 있어요",
+            fontSize = 10.sp,
+            textAlign = TextAlign.Center
+
+        )
+
+    }
 
         when {
             showDialog -> {
@@ -113,39 +140,8 @@ fun MoneyLeft(
             }
         }
     }
-}
 
-@Composable
-fun MoneyInfo(
-    modifier: Modifier = Modifier) {
-    Box {
-        //todo : 잔여횟수 계산 로직 추가
-        Text(
-            "앞으로 세탁을 3번 더 할 수 있어요",
-            fontSize = 10.sp,
-            textAlign = TextAlign.Center
-        )
-    }
-    Text(
-        "앞으로 세탁 & 건조를 2번 더 할 수 있어요",
-        fontSize = 10.sp,
-        textAlign = TextAlign.Center
 
-    )
-
-}
-@Composable
-fun addChargeMoney(
-    isAvailable:Boolean,
-    viewModel: ChargeViewModel,
-    input:Int)  {
-
-    if(isAvailable) {
-
-        //todo : 남은 금액}
-
-    }
-}
 
 
 @Composable
@@ -180,7 +176,6 @@ fun MoneyChargeAlertDialog(
                 value = "${chargeValue}원",
                 onValueChange = {
                     chargeValue = it.toIntOrNull() ?: 0
-                    //chargedMoney -> viewModel.updateChargedMoney(chargedMoney.toInt())
                     isVisible = true
                 },
                 singleLine = true,
@@ -248,10 +243,7 @@ fun MoneyChargeAlertDialog(
                     TextButton(
                         onClick = {
                             onDismissRequest()
-                            //todo : 이 잔액을 다이얼로그 밖으로 이동
-
                             viewModel.updateChargedMoney(chargeValue)
-                            Log.d("잔액", chargeValue.toString())
                         },
                         modifier = Modifier.padding(8.dp),
                     ) {

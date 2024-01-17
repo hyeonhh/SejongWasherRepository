@@ -2,6 +2,7 @@ package com.example.sejong2washertimer
 
 import android.annotation.SuppressLint
 import android.os.Bundle
+import android.util.Log
 
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -48,10 +49,10 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.sejong2washertimer.data.Datasource
+import com.example.sejong2washertimer.ui.CardChargeApp
 import com.example.sejong2washertimer.ui.CardChargeScreen
 import com.example.sejong2washertimer.ui.ChargeViewModel
 import com.example.sejong2washertimer.ui.DryerApp
-import com.example.sejong2washertimer.ui.MoneyInfo
 import com.example.sejong2washertimer.ui.MoneyLeft
 import com.example.sejong2washertimer.ui.MoneyUsageList
 import com.example.sejong2washertimer.ui.SettingApp
@@ -105,7 +106,7 @@ class MainActivity : ComponentActivity() {
                 val token = task.result
 
                 // Log
-            Timber.tag("token보기").d(token)
+           Log.d("token보기",token)
          }
 
 
@@ -126,14 +127,7 @@ class MainActivity : ComponentActivity() {
                 }
 
                 composable(RoutingScreen.Charge.name){
-                    Column {
-                        MoneyLeft(viewModel = ChargeViewModel())
-                        MoneyInfo()
-                        MoneyUsageList(usageContent = "세탁","-1300월",R.drawable.baseline_local_laundry_service_24)
-                        MoneyUsageList(usageContent = "건조","-1300월",R.drawable.baseline_dry_cleaning_24)
-                        MoneyUsageList(usageContent = "충전","+5000원",R.drawable.baseline_monetization_on_24)
-                    }
-
+                    CardChargeApp()
                 }
             }
 

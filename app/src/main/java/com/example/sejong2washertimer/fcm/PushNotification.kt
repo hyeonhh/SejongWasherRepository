@@ -3,5 +3,5 @@ package com.example.sejong2washertimer.fcm
 class PushNotification(
     val data : NotiModel,
     //token -> to로 변수명 변경하니 제대로 작동함!
-    val to: String="edd6OyJlQrilexZ3Bv4X50:APA91bF12JAHghG2AwLwNSovULkEyibpx8VSjX5SmJUkavOM94zka2j7UkOnYL672D_zWF3ta5CkqDi12_LOnPKtwaNpuKIH4dpp9j1IXgyLWUYZY1GPaXtbnqUHUQ2GYnUH2XTvHHcf"
+    val to: String="fCZL0u52SXO4g11jmKxZSC:APA91bHgMx6dq_qs5LE_XSmSnksIwnb_y8tryEScy-So8c0bH6-l0IRK5eN_ChAeTiRAnqI9g-46_9vtXlcNYDGNFEs6LYeKwA63lJLTMGktVe5Dj9JrulFGgp9B1X-Lz32rzr78-7Gd"
 )

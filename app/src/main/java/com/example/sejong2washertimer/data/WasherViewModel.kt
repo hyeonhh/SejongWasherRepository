@@ -1,4 +1,4 @@
-package com.example.sejong2washertimer.ui
+package com.example.sejong2washertimer.data
 
 import androidx.compose.runtime.MutableIntState
 import androidx.compose.runtime.MutableState

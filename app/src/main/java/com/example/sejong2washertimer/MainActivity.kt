@@ -1,6 +1,7 @@
 package com.example.sejong2washertimer
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.os.Bundle
 import android.util.Log
 
@@ -9,14 +10,10 @@ import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material.BottomNavigation
 import androidx.compose.material.BottomNavigationItem
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.CenterAlignedTopAppBar
@@ -25,9 +22,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -36,40 +31,26 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
-import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.preferencesDataStore
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.sejong2washertimer.data.Datasource
+import com.example.sejong2washertimer.data.ChargeViewModel
+import com.example.sejong2washertimer.data.PREFERENCES_NAME
 import com.example.sejong2washertimer.ui.CardChargeApp
-import com.example.sejong2washertimer.ui.CardChargeScreen
-import com.example.sejong2washertimer.ui.ChargeViewModel
 import com.example.sejong2washertimer.ui.DryerApp
-import com.example.sejong2washertimer.ui.MoneyLeft
-import com.example.sejong2washertimer.ui.MoneyUsageList
 import com.example.sejong2washertimer.ui.SettingApp
-import com.example.sejong2washertimer.ui.SettingScreen
 import com.example.sejong2washertimer.ui.WasherApp
-import com.example.sejong2washertimer.ui.WasherList
-import com.example.sejong2washertimer.ui.WasherViewModel
 import com.example.sejong2washertimer.ui.theme.Sejong2WasherTimerTheme
-import com.google.android.material.bottomnavigation.BottomNavigationView
-import com.google.firebase.Firebase
 import com.google.firebase.FirebaseApp
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.messaging.Constants.MessageNotificationKeys.TAG
 import com.google.firebase.messaging.FirebaseMessaging
-import com.google.firebase.messaging.messaging
-import org.checkerframework.common.subtyping.qual.Bottom
 import timber.log.Timber
 
 
@@ -82,6 +63,10 @@ enum class RoutingScreen() {
 
 class MainActivity : ComponentActivity() {
 
+    private val chargeViewModel by viewModels<ChargeViewModel>()
+
+
+
     private lateinit var navController: NavHostController
     private lateinit var databaseReference : DatabaseReference
     @OptIn(ExperimentalMaterial3Api::class)
@@ -92,6 +77,7 @@ class MainActivity : ComponentActivity() {
         FirebaseApp.initializeApp(this)
         val firebaseDatabase: FirebaseDatabase = FirebaseDatabase.getInstance()
         databaseReference = firebaseDatabase.getReference("timer")
+
 
 
         //todo : 추후 스플래시 화면에서 token 받도록 로직 이동 필요
@@ -127,7 +113,7 @@ class MainActivity : ComponentActivity() {
                 }
 
                 composable(RoutingScreen.Charge.name){
-                    CardChargeApp()
+                    CardChargeApp(chargeViewModel)
                 }
             }
 
@@ -137,9 +123,6 @@ class MainActivity : ComponentActivity() {
         setContent {
             val selectedItem by remember { mutableStateOf(0)}
             Sejong2WasherTimerTheme {
-
-
-                // A surface container using the 'background' color from the theme
                 Scaffold(
                     topBar = {
                         CenterAlignedTopAppBar(

@@ -2,16 +2,15 @@ package com.example.sejong2washertimer.ui
 
 
 import android.annotation.SuppressLint
+import android.app.Application
+import android.content.Context
 import android.content.Context.*
 import android.icu.text.SimpleDateFormat
-import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
-import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
@@ -20,7 +19,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -28,12 +26,12 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
@@ -41,15 +39,18 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.sejong2washertimer.R
+import com.example.sejong2washertimer.data.ChargeViewModel
 import com.example.sejong2washertimer.data.Datasource
+import com.example.sejong2washertimer.data.WasherViewModel
 import com.example.sejong2washertimer.fcm.NotiModel
 import com.example.sejong2washertimer.fcm.PushNotification
 import com.example.sejong2washertimer.fcm.RetrofitInstance
 import com.example.sejong2washertimer.model.Washer
 import com.example.sejong2washertimer.ui.ui.theme.Sejong2WasherTimerTheme
-import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.firebase.Firebase
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
@@ -59,18 +60,20 @@ import com.google.firebase.database.database
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import timber.log.Timber
-import java.time.LocalDate
-import java.time.LocalDateTime
 import java.util.Calendar
 
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun WasherApp(viewModel: WasherViewModel=viewModel()) {
+
+fun WasherApp(
+    washerViewModel: WasherViewModel =viewModel(),
+
+) {
     WasherList(
         washerList = Datasource().washers,
-        viewModel = viewModel)
+        washerViewModel = washerViewModel,
+    )
 }
 
 
@@ -80,14 +83,14 @@ fun WasherApp(viewModel: WasherViewModel=viewModel()) {
 fun WasherList(
     washerList: List<Washer>,
     modifier: Modifier = Modifier,
-    viewModel: WasherViewModel
+    washerViewModel: WasherViewModel,
 ) {
     LazyColumn(
         modifier=modifier
     ) {
         items(washerList) {
                 washer -> WasherCard(
-            viewModel = viewModel,
+            washerViewModel = washerViewModel,
             washer = washer,
             modifier= Modifier
                 .padding(10.dp)
@@ -111,7 +114,7 @@ fun createWasherReference(washerId: String?): DatabaseReference {
 fun WasherCard(
     washer: Washer,
     modifier: Modifier = Modifier,
-    viewModel: WasherViewModel
+    washerViewModel: WasherViewModel,
 ) {
 
     var updatedTime by remember { mutableStateOf("") }
@@ -145,20 +148,20 @@ fun WasherCard(
 
                 updatedTime = SimpleDateFormat("HH:mm").format(updateDate)
 
-                viewModel.setWasherFinishTime(washerId = washer.washerId, finishTime = updatedTime)
-                viewModel.setWasherState(washer.washerId,false)
+                washerViewModel.setWasherFinishTime(washerId = washer.washerId, finishTime = updatedTime)
+                washerViewModel.setWasherState(washer.washerId,false)
 
                 //todo :2
                 if (isCurrentTimeEqualsCompletionTime(updatedTime)){
-                    Log.d("${washer.washerId}완료시간", viewModel.getWasherState(washer.washerId).toString())
-                    viewModel.setWasherState(washer.washerId,true)
-                    Log.d("${washer.washerId}완료시간 상태 변경 후 ", viewModel.getWasherState(washer.washerId).toString())
+                    Log.d("${washer.washerId}완료시간", washerViewModel.getWasherState(washer.washerId).toString())
+                    washerViewModel.setWasherState(washer.washerId,true)
+                    Log.d("${washer.washerId}완료시간 상태 변경 후 ", washerViewModel.getWasherState(washer.washerId).toString())
 
 
                 }
             }
             else {
-                viewModel.setWasherState(washer.washerId,true)
+                washerViewModel.setWasherState(washer.washerId,true)
             }
         }
 
@@ -175,7 +178,7 @@ fun WasherCard(
             kotlinx.coroutines.delay(1000)
         }
         showToast = true
-        viewModel.setWasherState(washer.washerId, true)
+        washerViewModel.setWasherState(washer.washerId, true)
     }
 
     if(showToast) {
@@ -192,7 +195,7 @@ fun WasherCard(
                 // TODO: 토큰 저장 후 해당 토큰을 넣어주는 로직 추가 필요
                 val pushModel = PushNotification(notiModel)
                 pushWasherCompleted(pushModel)
-                viewModel.setWasherState(washer.washerId,true)
+                washerViewModel.setWasherState(washer.washerId,true)
                 myRef.removeValue()
 
             } catch (e: Exception) {
@@ -224,15 +227,15 @@ fun WasherCard(
             )
             Spacer(modifier = Modifier.size(30.dp))
 
-            if (viewModel.getWasherState(washer.washerId)) {
+            if (washerViewModel.getWasherState(washer.washerId)) {
                     WasherCardClickableContent(
                         washer = washer,
-                        viewModel = viewModel
+                        washerViewModel  = washerViewModel,
                     )
 
             }
             else{
-                Text(text = "완료 시간 : ${viewModel.getWasherFinishTime(washer.washerId)}",
+                Text(text = "완료 시간 : ${washerViewModel.getWasherFinishTime(washer.washerId)}",
                     style = TextStyle(fontSize = 13.sp,
                         fontWeight = FontWeight.Bold
                     )
@@ -253,9 +256,13 @@ fun WasherCard(
 
 @Composable
 fun WasherCardClickableContent(
-    viewModel: WasherViewModel,
+    washerViewModel: WasherViewModel,
     washer: Washer,
 ) {
+
+    val context = LocalContext.current
+
+    val chargeViewModel =ChargeViewModel(context.applicationContext as Application)
 
     var showDialog by remember { mutableStateOf(false) }
     val myRef = createWasherReference(washer.washerId)
@@ -274,10 +281,9 @@ fun WasherCardClickableContent(
             onConfirm = {
                 saveCurrentTimeDatabase()
                 showDialog = false
-                viewModel.setWasherState(washerId = washer.washerId, isAvailable = false)
-                //todo : 세탁 금액 차감 , 이력에 추가
-
-            },
+                washerViewModel.setWasherState(washerId = washer.washerId, isAvailable = false)
+                chargeViewModel.updateChargedMoney(-1300)
+                        },
             onDismiss = {
                 showDialog = false
 //                setIsFirebaseDataAvailable(false)
@@ -290,7 +296,7 @@ fun WasherCardClickableContent(
     Spacer(modifier = Modifier.size(10.dp))
 
     //todo : 상태값이 사용되는 부분
-    if(viewModel.getWasherState(washerId = washer.washerId)) {
+    if(washerViewModel.getWasherState(washerId = washer.washerId)) {
         Image(
             painter = painterResource(id = R.drawable.playicon),
             contentDescription = null,
@@ -311,7 +317,7 @@ fun WasherCardClickableContent(
     }
     else{
         Text(
-            text = "완료 시간 : ${viewModel.getWasherFinishTime(washer.washerId)}",
+            text = "완료 시간 : ${washerViewModel.getWasherFinishTime(washer.washerId)}",
             style = TextStyle(fontSize = 13.sp, fontWeight = FontWeight.Bold)
         )
     }
@@ -344,13 +350,7 @@ fun StartWasherAlertDialog(
     )
 }
 
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    Sejong2WasherTimerTheme {
-        WasherApp()
-    }
-}
+
 
 
 

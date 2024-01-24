@@ -8,8 +8,8 @@
     <string name="washer6">6번 세탁기</string>
     <string name="washer7">7번 세탁기</string>
     <string name="dryer1">1번 건조기</string>
-    <string name="dryer2">1번 건조기</string>
-    <string name="dryer3">1번 건조기</string>
+    <string name="dryer2">2번 건조기</string>
+    <string name="dryer3">3번 건조기</string>
     <string name="title_activity_splash_screen">SplashScreen</string>
     <string name="title_activity_home_screen">HomeScreen</string>
     <string name="title_activity_card_charge_screen">CardChargeScreen</string>

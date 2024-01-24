@@ -16,9 +16,9 @@ class Datasource() {
 
         )
     val dryers = listOf(
-        Dryer(R.drawable.dryer,R.string.dryer1,50),
-        Dryer(R.drawable.dryer,R.string.dryer2,50),
-        Dryer(R.drawable.dryer,R.string.dryer3,50),
+        Dryer("1",R.drawable.dryer,R.string.dryer1,50),
+        Dryer("2",R.drawable.dryer,R.string.dryer2,50),
+        Dryer("3",R.drawable.dryer,R.string.dryer3,50),
 
 
         )

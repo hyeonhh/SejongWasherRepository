@@ -1,4 +1,4 @@
-package com.example.sejong2washertimer.data
+package com.example.sejong2washertimer.viewModel
 
 import androidx.compose.runtime.MutableIntState
 import androidx.compose.runtime.MutableState

@@ -3,26 +3,34 @@ package com.example.sejong2washertimer.ui
 
 import android.annotation.SuppressLint
 import android.app.Application
-import android.content.Context
 import android.content.Context.*
 import android.icu.text.SimpleDateFormat
+import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
+import android.widget.Toast
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.activity.viewModels
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -36,16 +44,14 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.sejong2washertimer.R
-import com.example.sejong2washertimer.data.ChargeViewModel
+import com.example.sejong2washertimer.viewModel.ChargeViewModel
 import com.example.sejong2washertimer.data.Datasource
-import com.example.sejong2washertimer.data.WasherViewModel
+import com.example.sejong2washertimer.data.FirebaseManager
+import com.example.sejong2washertimer.viewModel.WasherViewModel
 import com.example.sejong2washertimer.fcm.NotiModel
 import com.example.sejong2washertimer.fcm.PushNotification
 import com.example.sejong2washertimer.fcm.RetrofitInstance
@@ -62,6 +68,26 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.util.Calendar
 
+class WasherScreen : ComponentActivity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContent {
+            Sejong2WasherTimerTheme {
+                Surface(
+                    modifier = Modifier.fillMaxSize(),
+                    color = MaterialTheme.colorScheme.background
+                ) {
+
+                }
+                WasherApp()
+
+
+            }
+        }
+    }
+}
+
+
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
@@ -69,10 +95,11 @@ import java.util.Calendar
 fun WasherApp(
     washerViewModel: WasherViewModel =viewModel(),
 
-) {
+    ) {
     WasherList(
         washerList = Datasource().washers,
         washerViewModel = washerViewModel,
+
     )
 }
 
@@ -100,7 +127,6 @@ fun WasherList(
     }
 }
 
-@Composable
 fun createWasherReference(washerId: String?): DatabaseReference {
     val database = Firebase.database
     return database.getReference("washer${washerId}startTime")
@@ -121,6 +147,8 @@ fun WasherCard(
     var showToast by remember { mutableStateOf(false)
     }
     val myRef = createWasherReference(washer.washerId)
+
+
 
 
     fun isCurrentTimeEqualsCompletionTime(completionTime:String):Boolean{
@@ -192,7 +220,6 @@ fun WasherCard(
         LaunchedEffect(Unit){
             try {
                 val notiModel = NotiModel("${washer.washerId}번 세탁이 완료되었어요!","\uD83D\uDE0A 세탁물을 찾으러와주세요 ")
-                // TODO: 토큰 저장 후 해당 토큰을 넣어주는 로직 추가 필요
                 val pushModel = PushNotification(notiModel)
                 pushWasherCompleted(pushModel)
                 washerViewModel.setWasherState(washer.washerId,true)
@@ -262,7 +289,7 @@ fun WasherCardClickableContent(
 
     val context = LocalContext.current
 
-    val chargeViewModel =ChargeViewModel(context.applicationContext as Application)
+    val chargeViewModel = ChargeViewModel(context.applicationContext as Application)
 
     var showDialog by remember { mutableStateOf(false) }
     val myRef = createWasherReference(washer.washerId)
@@ -283,19 +310,17 @@ fun WasherCardClickableContent(
                 showDialog = false
                 washerViewModel.setWasherState(washerId = washer.washerId, isAvailable = false)
                 chargeViewModel.updateChargedMoney(-1300)
+                
                         },
             onDismiss = {
                 showDialog = false
-//                setIsFirebaseDataAvailable(false)
 
             }
         )
     }
 
-    // Washer가 사용 가능한 상태일 때 클릭하면 AlertDialog 호출
     Spacer(modifier = Modifier.size(10.dp))
 
-    //todo : 상태값이 사용되는 부분
     if(washerViewModel.getWasherState(washerId = washer.washerId)) {
         Image(
             painter = painterResource(id = R.drawable.playicon),
@@ -377,6 +402,4 @@ private fun pushWasherCompleted(notification:PushNotification)= CoroutineScope(D
     }
 
 }
-
-
 

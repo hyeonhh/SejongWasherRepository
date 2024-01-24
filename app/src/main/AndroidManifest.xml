@@ -4,7 +4,7 @@
 
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.VIBRATE" />
-    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permissAion android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
 
@@ -17,6 +17,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.Sejong2WasherTimer"
+        android:usesCleartextTraffic="true"
         tools:targetApi="31">
         <activity
             android:name=".ui.SettingScreen"
@@ -28,11 +29,7 @@
             android:exported="false"
             android:label="@string/title_activity_card_charge_screen"
             android:theme="@style/Theme.Sejong2WasherTimer" />
-        <activity
-            android:name=".ui.theme.HomeScreen"
-            android:exported="false"
-            android:label="@string/title_activity_home_screen"
-            android:theme="@style/Theme.Sejong2WasherTimer" />
+
         <activity
             android:name=".MainActivity"
             android:exported="true"

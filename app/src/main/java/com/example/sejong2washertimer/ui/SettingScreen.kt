@@ -1,5 +1,9 @@
 package com.example.sejong2washertimer.ui
 
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.content.Context
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -33,6 +37,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat
 import com.example.sejong2washertimer.ui.ui.theme.Sejong2WasherTimerTheme
 
 class SettingScreen : ComponentActivity() {
@@ -51,6 +56,7 @@ class SettingScreen : ComponentActivity() {
     }
 }
 
+
 @Composable
 fun SettingApp(modifier: Modifier=Modifier) {
     var washerChecked by remember { mutableStateOf(true) }
@@ -66,11 +72,6 @@ fun SettingApp(modifier: Modifier=Modifier) {
             .padding(10.dp)
     ) {
 
-
-        Text(text="성현님",
-            fontSize = 15.sp)
-        Text(text="깨끗하게 빨래중이에요!",
-            fontSize = 15.sp)
         Text(
             text = "알림 설정",
             fontWeight = FontWeight.Bold,
@@ -129,43 +130,38 @@ fun SettingApp(modifier: Modifier=Modifier) {
                 )
             }
         }
-
-        Text(text = "잔액 알림 수신",
-            fontSize = 12.sp)
-        Text(text = "세탁 카드 잔액에 맞추어 충전 시기를 알려드려요!",
-            fontSize=10.sp,
-            color = Color.Gray
-        )
-        Card(
-            modifier =modifier
-                .padding(10.dp)
-        ) {
-            Row(
-                modifier=modifier
-                    .padding(5.dp)
-            ) {
-                Column {
-                    Text(text = "\uD83E\uDE99이번이 마지막 세탁이에요! ",
-                        fontSize=12.sp)
-                    Text(text = "카드를  충전해주세요",
-                        fontSize=10.sp)
-                }
-                Spacer(modifier = modifier.width(40.dp))
-                Switch(
-                    modifier = modifier
-                        .align(Alignment.CenterVertically),
-                    checked = ischarged, onCheckedChange = { ischarged = it }
-
-                )
-            }
-        }
+//
+//        Text(text = "잔액 알림 수신",
+//            fontSize = 12.sp)
+//        Text(text = "세탁 카드 잔액에 맞추어 충전 시기를 알려드려요!",
+//            fontSize=10.sp,
+//            color = Color.Gray
+//        )
+//        Card(
+//            modifier =modifier
+//                .padding(10.dp)
+//        ) {
+//            Row(
+//                modifier=modifier
+//                    .padding(5.dp)
+//            ) {
+//                Column {
+//                    Text(text = "\uD83E\uDE99이번이 마지막 세탁이에요! ",
+//                        fontSize=12.sp)
+//                    Text(text = "카드를  충전해주세요",
+//                        fontSize=10.sp)
+//                }
+//                Spacer(modifier = modifier.width(40.dp))
+//                Switch(
+//                    modifier = modifier
+//                        .align(Alignment.CenterVertically),
+//                    checked = ischarged, onCheckedChange = { ischarged = it }
+//
+//                )
+//            }
+//        }
 
     }
-
-
-
-
-
 }
 
 

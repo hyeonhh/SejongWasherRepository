@@ -4,6 +4,7 @@ import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 
 data class Dryer(
+    val dryerId: String,
     @DrawableRes val dryerImageResourceId: Int,
     @StringRes val dryerResourceId : Int,
     var dryerRemainedTime:Int

@@ -1,10 +1,7 @@
-package com.example.sejong2washertimer.data
+package com.example.sejong2washertimer.viewModel
 
 import android.app.Application
 import android.content.Context
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.setValue
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
@@ -12,7 +9,6 @@ import androidx.datastore.preferences.core.emptyPreferences
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
@@ -54,6 +50,7 @@ class ChargeViewModel(application: Application):AndroidViewModel(application) {
                     val currentChargedMoney = preferences[PreferencesKeys.CHARGED_MONEY] ?:0
                     val newChargedMoney = currentChargedMoney + input
                     preferences[PreferencesKeys.CHARGED_MONEY] = newChargedMoney
+
 
                 }
 

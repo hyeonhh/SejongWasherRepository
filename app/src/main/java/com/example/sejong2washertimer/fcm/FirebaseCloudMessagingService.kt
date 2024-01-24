@@ -8,11 +8,17 @@ import android.os.Build
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
+import androidx.core.content.ContextCompat
 import com.example.sejong2washertimer.R
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class FirebaseCloudMessagingService :FirebaseMessagingService() {
+
+
 
     override fun onNewToken(token: String) {
         super.onNewToken(token)
@@ -32,22 +38,20 @@ class FirebaseCloudMessagingService :FirebaseMessagingService() {
 
         }
 
-        // 지정한 형태의 데이터 메시지를 위한 코드
         val channelId = "washerChannel"
+
         val notificationId= 0
 
         val title= message.data["title"].toString()
         val body = message.data["content"].toString()
 
-        Log.d("Cloud",message.data.toString())
-
 
         createNotificationChannel(channelId)
         showSimpleNotification(channelId,notificationId,title,body)
 
+
+
     }
-
-
 
 
     private fun createNotificationChannel(channelId:String) {
@@ -62,9 +66,10 @@ class FirebaseCloudMessagingService :FirebaseMessagingService() {
             val notificationManager:NotificationManager=getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
             notificationManager.createNotificationChannel(channel)
         }
-
-
     }
+
+
+
 
     @SuppressLint("MissingPermission")
     fun showSimpleNotification(
@@ -84,11 +89,39 @@ class FirebaseCloudMessagingService :FirebaseMessagingService() {
         with(NotificationManagerCompat.from(this)) {
             notify(notificationId,builder.build())
         }
-
     }
 
 
 
 
+
+
 }
+
+
+
+fun pushWasherCompleted(notification:PushNotification)= CoroutineScope(Dispatchers.IO).launch {
+
+    try {
+        val response = RetrofitInstance.api.postNotification(notification)
+        if(response.isSuccessful) {
+            Log.d("testPush성공",response.body().toString())
+
+        }
+        else {
+            Log.e("실패","${response.errorBody()?.string()}")
+            Log.e("실패","${response.code()}")
+            Log.e("실패","${response.headers()}")
+
+
+        }
+    }
+    catch (e:Exception){
+        e.printStackTrace()
+    }
+
+}
+
+
+
 

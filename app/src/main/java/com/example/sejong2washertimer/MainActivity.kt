@@ -1,7 +1,7 @@
 package com.example.sejong2washertimer
 
 import android.annotation.SuppressLint
-import android.content.Context
+import android.content.Context.*
 import android.os.Bundle
 import android.util.Log
 
@@ -32,15 +32,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
-import androidx.datastore.core.DataStore
-import androidx.datastore.preferences.core.Preferences
-import androidx.datastore.preferences.preferencesDataStore
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.sejong2washertimer.data.ChargeViewModel
-import com.example.sejong2washertimer.data.PREFERENCES_NAME
+import com.example.sejong2washertimer.viewModel.ChargeViewModel
 import com.example.sejong2washertimer.ui.CardChargeApp
 import com.example.sejong2washertimer.ui.DryerApp
 import com.example.sejong2washertimer.ui.SettingApp
@@ -65,10 +61,9 @@ class MainActivity : ComponentActivity() {
 
     private val chargeViewModel by viewModels<ChargeViewModel>()
 
-
-
     private lateinit var navController: NavHostController
-    private lateinit var databaseReference : DatabaseReference
+    private lateinit var databaseReference: DatabaseReference
+
     @OptIn(ExperimentalMaterial3Api::class)
     @SuppressLint("SuspiciousIndentation", "UnusedMaterial3ScaffoldPaddingParameter")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -79,21 +74,20 @@ class MainActivity : ComponentActivity() {
         databaseReference = firebaseDatabase.getReference("timer")
 
 
-
         //todo : 추후 스플래시 화면에서 token 받도록 로직 이동 필요
 
         FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
-                if (!task.isSuccessful) {
-                    Timber.tag(TAG).w(task.exception, "Fetching FCM registration token failed")
-                    return@addOnCompleteListener
-                }
+            if (!task.isSuccessful) {
+                Timber.tag(TAG).w(task.exception, "Fetching FCM registration token failed")
+                return@addOnCompleteListener
+            }
 
-                // Get new FCM registration token
-                val token = task.result
+            // Get new FCM registration token
+            val token = task.result
 
-                // Log
-           Log.d("token보기",token)
-         }
+            // Log
+            Log.d("token보기", token)
+        }
 
 
         @Composable
@@ -101,7 +95,8 @@ class MainActivity : ComponentActivity() {
             navController = rememberNavController()
             NavHost(
                 navController = navController,
-                startDestination = RoutingScreen.Washer.name){
+                startDestination = RoutingScreen.Washer.name
+            ) {
                 composable(RoutingScreen.Washer.name) {
                     WasherApp()
                 }
@@ -112,7 +107,7 @@ class MainActivity : ComponentActivity() {
                     SettingApp()
                 }
 
-                composable(RoutingScreen.Charge.name){
+                composable(RoutingScreen.Charge.name) {
                     CardChargeApp(chargeViewModel)
                 }
             }
@@ -121,7 +116,7 @@ class MainActivity : ComponentActivity() {
 
 
         setContent {
-            val selectedItem by remember { mutableStateOf(0)}
+            val selectedItem by remember { mutableStateOf(0) }
             Sejong2WasherTimerTheme {
                 Scaffold(
                     topBar = {
@@ -131,9 +126,11 @@ class MainActivity : ComponentActivity() {
                                 titleContentColor = MaterialTheme.colorScheme.primary
                             ),
 
-                            title = { Text(
-                                text = "세탁실",
-                            ) },
+                            title = {
+                                Text(
+                                    text = "세탁실",
+                                )
+                            },
 
                             actions = {
                                 IconButton(
@@ -149,60 +146,70 @@ class MainActivity : ComponentActivity() {
                         )
                     },
                     bottomBar = {
-                                BottomNavigation(
-                                    backgroundColor = Color.White
-                                ) {
-                                    BottomNavigationItem(
-                                        selected = selectedItem==0,
-                                        onClick = {
-                                            navController.navigate(RoutingScreen.Washer.name)
-                                        },
-                                        icon = {
-                                            Image(painter = painterResource(id = R.drawable.baseline_local_laundry_service_24), contentDescription ="washer" )
-                                        })
+                        BottomNavigation(
+                            backgroundColor = Color.White
+                        ) {
+                            BottomNavigationItem(
+                                selected = selectedItem == 0,
+                                onClick = {
+                                    navController.navigate(RoutingScreen.Washer.name)
+                                },
+                                icon = {
+                                    Image(
+                                        painter = painterResource(id = R.drawable.baseline_local_laundry_service_24),
+                                        contentDescription = "washer"
+                                    )
+                                })
 
-                                    BottomNavigationItem(
-                                        selected = selectedItem==1,
-                                        onClick = {
-                                            navController.navigate(RoutingScreen.Dryer.name)
+                            BottomNavigationItem(
+                                selected = selectedItem == 1,
+                                onClick = {
+                                    navController.navigate(RoutingScreen.Dryer.name)
 
-                                        },
-                                        icon = {
-                                            Image(painter = painterResource(id = R.drawable.baseline_dry_cleaning_24), contentDescription ="washer" )
-                                        }
+                                },
+                                icon = {
+                                    Image(
+                                        painter = painterResource(id = R.drawable.baseline_dry_cleaning_24),
+                                        contentDescription = "washer"
+                                    )
+                                }
 
+                            )
+
+                            BottomNavigationItem(
+                                selected = selectedItem == 2,
+                                onClick = {
+                                    navController.navigate(RoutingScreen.Charge.name)
+                                },
+                                icon = {
+                                    Image(
+                                        painter = painterResource(id = R.drawable.baseline_monetization_on_24),
+                                        contentDescription = "washer"
+                                    )
+                                }
+                            )
+
+                            BottomNavigationItem(
+                                selected = selectedItem == 3,
+                                onClick = {
+                                    navController.navigate(RoutingScreen.Setting.name)
+                                },
+                                icon = {
+                                    Icon(
+                                        imageVector = Icons.Filled.Settings,
+                                        contentDescription = "설정"
                                     )
 
-                                    BottomNavigationItem(
-                                        selected = selectedItem==2,
-                                        onClick = {
-                                                  navController.navigate(RoutingScreen.Charge.name)
-                                        },
-                                        icon = {
-                                            Image(painter = painterResource(id = R.drawable.baseline_monetization_on_24), contentDescription ="washer" )
-                                        }
-                                       )
-
-                                    BottomNavigationItem(
-                                        selected = selectedItem==3,
-                                        onClick = {
-                                                  navController.navigate(RoutingScreen.Setting.name)
-                                        },
-                                        icon = {
-                                            Icon(
-                                                imageVector = Icons.Filled.Settings,
-                                                contentDescription = "설정"
-                                            )
-
-                                        })
-                                }
-                                },
+                                })
+                        }
+                    },
                     content = {
                         Box(
-                            modifier=Modifier
+                            modifier = Modifier
                                 .fillMaxSize(),
 
-                        contentAlignment = Alignment.Center) {
+                            contentAlignment = Alignment.Center
+                        ) {
                             Navigation()
 
                         }
@@ -216,7 +223,5 @@ class MainActivity : ComponentActivity() {
     }
 
 
+
 }
-
-
-

@@ -1,6 +1,7 @@
 package com.example.sejong2washertimer
 
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.content.Context.*
 import android.os.Bundle
 import android.util.Log
@@ -42,12 +43,16 @@ import com.example.sejong2washertimer.ui.DryerApp
 import com.example.sejong2washertimer.ui.SettingApp
 import com.example.sejong2washertimer.ui.WasherApp
 import com.example.sejong2washertimer.ui.theme.Sejong2WasherTimerTheme
+import com.example.sejong2washertimer.viewModel.WeatherViewModel
 import com.google.firebase.FirebaseApp
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.messaging.Constants.MessageNotificationKeys.TAG
 import com.google.firebase.messaging.FirebaseMessaging
+import dagger.hilt.android.AndroidEntryPoint
 import timber.log.Timber
+
+
 
 
 enum class RoutingScreen() {
@@ -57,12 +62,13 @@ enum class RoutingScreen() {
     Charge
 }
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
     private val chargeViewModel by viewModels<ChargeViewModel>()
-
     private lateinit var navController: NavHostController
     private lateinit var databaseReference: DatabaseReference
+    private val viewModel by viewModels<WeatherViewModel>()
 
     @OptIn(ExperimentalMaterial3Api::class)
     @SuppressLint("SuspiciousIndentation", "UnusedMaterial3ScaffoldPaddingParameter")
@@ -73,6 +79,34 @@ class MainActivity : ComponentActivity() {
         val firebaseDatabase: FirebaseDatabase = FirebaseDatabase.getInstance()
         databaseReference = firebaseDatabase.getReference("timer")
 
+
+        viewModel.getWeather("JSON",14,1,20240126,1100,"98" ,"75")
+        //날씨
+        viewModel.weatherResponse.observe(this) {
+            response ->
+            response.body()?.response?.body?.items?.item?.let{
+                items ->
+                val filteredItems = items.filter {
+                    it.category in listOf("T1H","SKY","RN1","REH","PTY")
+                }
+                for (i in filteredItems) {
+                    Log.d("날씨","$i")
+                    if(i.category =="SKY") {
+                        if(i.fcstValue=="1"){
+                            Log.d("날씨","맑음")
+                        }
+                        if(i.fcstValue=="3"){
+                            Log.d("날씨","구름많음")
+                        }
+                        if(i.fcstValue=="4"){
+                            Log.d("날씨","흐림")
+                        }
+
+                    }
+            }
+            }
+
+            }
 
         //todo : 추후 스플래시 화면에서 token 받도록 로직 이동 필요
 

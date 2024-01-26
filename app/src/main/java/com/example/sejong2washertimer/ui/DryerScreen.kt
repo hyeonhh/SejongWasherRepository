@@ -66,7 +66,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.util.Calendar
 
-
 class DryerScreen : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {

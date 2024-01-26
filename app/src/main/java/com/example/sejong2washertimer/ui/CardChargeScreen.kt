@@ -192,7 +192,6 @@ fun MoneyChargeAlertDialog(
                     )
 
                 }
-
                 TextButton(onClick = {
                     chargeValue += 5000
                     isVisible = true
@@ -243,8 +242,6 @@ fun MoneyChargeAlertDialog(
                         Text(text = "채우기")
 
                     }
-
-
                 }
             }
 
@@ -255,28 +252,3 @@ fun MoneyChargeAlertDialog(
 
 
 
-@Composable
-fun MoneyUsageList(
-    usageContent: String,
-    usageValue: String,
-    imageResource: Int,
-    modifier: Modifier = Modifier
-) {
-
-    ListItem(
-        headlineContent = {
-            Text(text = usageContent)
-        },
-        trailingContent = {
-            Text(text = usageValue)
-        },
-        leadingContent = {
-            Image(
-                painter = painterResource(id = imageResource),
-                contentDescription = usageContent
-            )
-        }
-
-    )
-
-}

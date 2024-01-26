@@ -80,8 +80,6 @@ class WasherScreen : ComponentActivity() {
 
                 }
                 WasherApp()
-
-
             }
         }
     }

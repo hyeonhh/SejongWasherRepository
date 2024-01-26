@@ -14,3 +14,4 @@
 .cxx
 local.properties
 /app/src/main/java/com/example/sejong2washertimer/fcm/Repo.kt
+/app/src/main/java/com/example/sejong2washertimer/api/ApiKey.kt

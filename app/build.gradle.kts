@@ -1,4 +1,8 @@
+import org.jetbrains.kotlin.kapt3.base.Kapt.kapt
+
 plugins {
+    kotlin("kapt")
+    id("com.google.dagger.hilt.android")
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     id("com.google.gms.google-services")
@@ -32,26 +36,33 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_18
+        targetCompatibility = JavaVersion.VERSION_18
     }
     kotlinOptions {
-        jvmTarget = "1.8"
+        jvmTarget = "18"
     }
     buildFeatures {
         compose = true
     }
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.4.3"
+        kotlinCompilerExtensionVersion = "1.4.6"
     }
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
     }
+    viewBinding{
+        enable = true
+    }
 }
 
 dependencies {
+    implementation("com.google.dagger:hilt-android:2.44")
+    kapt("com.google.dagger:hilt-android-compiler:2.44")
+
+
     implementation(platform("com.google.firebase:firebase-bom:32.6.0"))
     implementation("com.google.firebase:firebase-analytics")
     implementation("com.google.firebase:firebase-database-ktx")
@@ -106,14 +117,16 @@ dependencies {
     implementation ("androidx.compose.material:material:1.5.4")
 
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.6.1")
-    implementation ("androidx.datastore:datastore-preferences:1.0.0")
-
-
 
 
 }
 
+// Allow references to generated code
+kapt {
+    correctErrorTypes = true
+}
 
 
-
-
+hilt{
+    enableAggregatingTask=true
+}

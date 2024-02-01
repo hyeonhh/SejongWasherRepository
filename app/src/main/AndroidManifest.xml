@@ -21,12 +21,12 @@
         android:usesCleartextTraffic="true"
         tools:targetApi="31">
         <activity
-            android:name=".ui.SettingScreen"
+            android:name=".ui.screen.SettingScreen"
             android:exported="false"
             android:label="@string/title_activity_setting_screen"
             android:theme="@style/Theme.Sejong2WasherTimer" />
         <activity
-            android:name=".ui.CardChargeScreen"
+            android:name=".ui.screen.CardChargeScreen"
             android:exported="false"
             android:label="@string/title_activity_card_charge_screen"
             android:theme="@style/Theme.Sejong2WasherTimer" />

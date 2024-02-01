@@ -1,7 +1,6 @@
 package com.example.sejong2washertimer.api
 
 import com.example.sejong2washertimer.api.Constants.Companion.WEATHER_BASE_URL
-import com.example.sejong2washertimer.fcm.Repo.Companion.BASE_URL
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import dagger.Module
@@ -14,7 +13,7 @@ import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
-object AppModule {
+object RetrofitHelper {
 
     @Provides
     @Singleton

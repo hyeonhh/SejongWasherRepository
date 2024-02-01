@@ -1,20 +1,16 @@
-package com.example.sejong2washertimer.ui
+package com.example.sejong2washertimer.ui.screen
 
-
-import android.annotation.SuppressLint
 import android.app.Application
-import android.content.Context.*
 import android.icu.text.SimpleDateFormat
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
-import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.viewModels
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -30,7 +26,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -48,15 +43,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.sejong2washertimer.R
-import com.example.sejong2washertimer.viewModel.ChargeViewModel
 import com.example.sejong2washertimer.data.Datasource
-import com.example.sejong2washertimer.data.FirebaseManager
-import com.example.sejong2washertimer.viewModel.WasherViewModel
 import com.example.sejong2washertimer.fcm.NotiModel
 import com.example.sejong2washertimer.fcm.PushNotification
 import com.example.sejong2washertimer.fcm.RetrofitInstance
-import com.example.sejong2washertimer.model.Washer
+import com.example.sejong2washertimer.model.Dryer
 import com.example.sejong2washertimer.ui.ui.theme.Sejong2WasherTimerTheme
+import com.example.sejong2washertimer.viewModel.ChargeViewModel
+import com.example.sejong2washertimer.viewModel.DryerViewModel
 import com.google.firebase.Firebase
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
@@ -65,10 +59,12 @@ import com.google.firebase.database.ValueEventListener
 import com.google.firebase.database.database
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.util.Calendar
 
-class WasherScreen : ComponentActivity() {
+class DryerScreen : ComponentActivity() {
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
@@ -79,7 +75,8 @@ class WasherScreen : ComponentActivity() {
                 ) {
 
                 }
-                WasherApp()
+                DryerApp()
+
             }
         }
     }
@@ -87,67 +84,42 @@ class WasherScreen : ComponentActivity() {
 
 
 
-@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-
-fun WasherApp(
-    washerViewModel: WasherViewModel =viewModel(),
-
-    ) {
-    WasherList(
-        washerList = Datasource().washers,
-        washerViewModel = washerViewModel,
-
-    )
-}
-
-
-
-
-@Composable
-fun WasherList(
-    washerList: List<Washer>,
+fun DryerList(
+    dryerList: List<Dryer>,
     modifier: Modifier = Modifier,
-    washerViewModel: WasherViewModel,
+    dryerViewModel: DryerViewModel,
 ) {
-    LazyColumn(
-        modifier=modifier
+    Column(
+        horizontalAlignment=Alignment.Start
     ) {
-        items(washerList) {
-                washer -> WasherCard(
-            washerViewModel = washerViewModel,
-            washer = washer,
-            modifier= Modifier
-                .padding(10.dp)
-
-        )
+        LazyColumn(
+            modifier = modifier) {
+            items(dryerList) {
+                    dryer -> DryerCard(
+                dryer = dryer,
+                dryerViewModel=dryerViewModel,
+                modifier= Modifier.padding(10.dp)
+            )
+            }
         }
     }
 }
 
-fun createWasherReference(washerId: String?): DatabaseReference {
+fun createDryerReference(dryerId: String?) : DatabaseReference {
     val database = Firebase.database
-    return database.getReference("washer${washerId}startTime")
+    return database.getReference("dryer${dryerId}startTime")
 }
-
-
-
-
-
 @Composable
-fun WasherCard(
-    washer: Washer,
-    modifier: Modifier = Modifier,
-    washerViewModel: WasherViewModel,
-) {
-
+fun DryerCard(
+    dryerViewModel: DryerViewModel,
+    dryer: Dryer,
+    modifier: Modifier = Modifier
+){
     var updatedTime by remember { mutableStateOf("") }
-    var showToast by remember { mutableStateOf(false)
-    }
-    val myRef = createWasherReference(washer.washerId)
+    var showToast by remember { mutableStateOf(false)}
 
-
-
+    val myRef = createDryerReference(dryer.dryerId)
 
     fun isCurrentTimeEqualsCompletionTime(completionTime:String):Boolean{
         try {
@@ -161,12 +133,12 @@ fun WasherCard(
     }
 
 
-
     myRef.addValueEventListener(object : ValueEventListener {
+
         override fun onDataChange(snapshot: DataSnapshot) {
-            val washerStartTime = snapshot.getValue(String::class.java)
-            if(washerStartTime!= null)    {
-                val startDate = SimpleDateFormat("HH:mm").parse(washerStartTime)
+            val dryerStartTime = snapshot.getValue(String::class.java)
+            if(dryerStartTime!= null)    {
+                val startDate = SimpleDateFormat("HH:mm").parse(dryerStartTime)
                 val updateDate = Calendar.getInstance().apply {
                     time=startDate
                     add(Calendar.MINUTE,1)
@@ -174,20 +146,20 @@ fun WasherCard(
 
                 updatedTime = SimpleDateFormat("HH:mm").format(updateDate)
 
-                washerViewModel.setWasherFinishTime(washerId = washer.washerId, finishTime = updatedTime)
-                washerViewModel.setWasherState(washer.washerId,false)
+                dryerViewModel.setDryerFinishTime(dryerId = dryer.dryerId, finishTime = updatedTime)
+                dryerViewModel.setDryerState(dryer.dryerId,false)
 
                 //todo :2
                 if (isCurrentTimeEqualsCompletionTime(updatedTime)){
-                    Log.d("${washer.washerId}완료시간", washerViewModel.getWasherState(washer.washerId).toString())
-                    washerViewModel.setWasherState(washer.washerId,true)
-                    Log.d("${washer.washerId}완료시간 상태 변경 후 ", washerViewModel.getWasherState(washer.washerId).toString())
+                    Log.d("${dryer.dryerId}완료시간", dryerViewModel.getDryerState(dryer.dryerId).toString())
+                    dryerViewModel.setDryerState(dryer.dryerId,true)
+                    Log.d("${dryer.dryerId}완료시간 상태 변경 후 ", dryerViewModel.getDryerState(dryer.dryerId).toString())
 
 
                 }
             }
             else {
-                washerViewModel.setWasherState(washer.washerId,true)
+                dryerViewModel.setDryerState(dryer.dryerId,true)
             }
         }
 
@@ -198,13 +170,12 @@ fun WasherCard(
     })
 
 
-
-    LaunchedEffect(washer.washerId) {
+    LaunchedEffect(dryer.dryerId) {
         while (!isCurrentTimeEqualsCompletionTime(updatedTime)) {
-            kotlinx.coroutines.delay(1000)
+            delay(1000)
         }
         showToast = true
-        washerViewModel.setWasherState(washer.washerId, true)
+        dryerViewModel.setDryerState(dryer.dryerId, true)
     }
 
     if(showToast) {
@@ -217,10 +188,10 @@ fun WasherCard(
 
         LaunchedEffect(Unit){
             try {
-                val notiModel = NotiModel("${washer.washerId}번 세탁이 완료되었어요!","\uD83D\uDE0A 세탁물을 찾으러와주세요 ")
+                val notiModel = NotiModel("${dryer.dryerId}번 건조가 완료되었어요!","\uD83D\uDE0A 세탁물을 찾으러와주세요 ")
                 val pushModel = PushNotification(notiModel)
-                pushWasherCompleted(pushModel)
-                washerViewModel.setWasherState(washer.washerId,true)
+                pushDryerCompleted(pushModel)
+                dryerViewModel.setDryerState(dryer.dryerId,true)
                 myRef.removeValue()
 
             } catch (e: Exception) {
@@ -233,56 +204,86 @@ fun WasherCard(
     }
 
 
-    Card(
-        modifier = modifier
-    ) {
-
+    Card {
         Row(
             verticalAlignment = Alignment.CenterVertically
         ) {
-
             Image(
-                painter = painterResource(id = washer.washerImageResourceId),
-                contentDescription = stringResource(id = washer.washerStringResourceId),
+                painter = painterResource(id = dryer.dryerImageResourceId),
+                contentDescription = stringResource(id = dryer.dryerResourceId),
                 contentScale = ContentScale.Crop
             )
             Spacer(modifier = Modifier.size(5.dp))
             Text(
-                text = stringResource(id = washer.washerStringResourceId),
+                text = stringResource(id = dryer.dryerResourceId),
             )
-            Spacer(modifier = Modifier.size(30.dp))
-
-            if (washerViewModel.getWasherState(washer.washerId)) {
-                    WasherCardClickableContent(
-                        washer = washer,
-                        washerViewModel  = washerViewModel,
-                    )
+            Spacer(modifier = Modifier.size(20.dp))
+            if (dryerViewModel.getDryerState(dryer.dryerId)) {
+                DryerCardClickableContent(
+                    dryerViewModel = dryerViewModel,
+                    dryer  = dryer,
+                )
 
             }
             else{
-                Text(text = "완료 시간 : ${washerViewModel.getWasherFinishTime(washer.washerId)}",
+                Text(text = "완료 시간 : ${dryerViewModel.getDryerFinishTime(dryer.dryerId)}",
                     style = TextStyle(fontSize = 13.sp,
                         fontWeight = FontWeight.Bold
                     )
 
                 )
             }
-
-
         }
     }
+}
 
 
 
+@Composable
+fun DryerApp() {
+    DryerList(
+        dryerList = Datasource().dryers,
+        dryerViewModel = viewModel()
+        )
 
 }
 
 
 
 @Composable
-fun WasherCardClickableContent(
-    washerViewModel: WasherViewModel,
-    washer: Washer,
+fun StartDryerAlertDialog(
+    dialogTitle: String,
+    dialogText: String,
+    onConfirm: () -> Unit,
+    onDismiss: () -> Unit) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text(text = dialogTitle)
+        },
+        text = {
+            Text(text = dialogText)
+        },
+        confirmButton = {
+            TextButton(onClick =onConfirm) {
+                Text(text = "건조 시작하기")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text(text = "건조 취소하기")
+            }
+        }
+    )
+}
+
+
+
+
+@Composable
+fun DryerCardClickableContent(
+    dryerViewModel: DryerViewModel,
+    dryer: Dryer,
 ) {
 
     val context = LocalContext.current
@@ -290,7 +291,7 @@ fun WasherCardClickableContent(
     val chargeViewModel = ChargeViewModel(context.applicationContext as Application)
 
     var showDialog by remember { mutableStateOf(false) }
-    val myRef = createWasherReference(washer.washerId)
+    val myRef = createDryerReference(dryer.dryerId)
 
     fun saveCurrentTimeDatabase() {
         val startedTime = System.currentTimeMillis()
@@ -300,16 +301,16 @@ fun WasherCardClickableContent(
     }
     if (showDialog) {
         // AlertDialog 호출
-        StartWasherAlertDialog(
-            dialogTitle = "${washer.washerId}번 세탁기 시작",
-            dialogText =" 50분동안 세탁이 진행되어요! 세탁을 시작할까요?" ,
+        StartDryerAlertDialog(
+            dialogTitle = "${dryer.dryerId}번 건조기 시작",
+            dialogText =" 50분동안 건조가 진행돼요! 건조를 시작할까요?" ,
             onConfirm = {
                 saveCurrentTimeDatabase()
                 showDialog = false
-                washerViewModel.setWasherState(washerId = washer.washerId, isAvailable = false)
+                dryerViewModel.setDryerState(dryerId = dryer.dryerId, isAvailable = false)
                 chargeViewModel.updateChargedMoney(-1300)
-                
-                        },
+
+            },
             onDismiss = {
                 showDialog = false
 
@@ -319,7 +320,7 @@ fun WasherCardClickableContent(
 
     Spacer(modifier = Modifier.size(10.dp))
 
-    if(washerViewModel.getWasherState(washerId = washer.washerId)) {
+    if(dryerViewModel.getDryerState(dryerId = dryer.dryerId)) {
         Image(
             painter = painterResource(id = R.drawable.playicon),
             contentDescription = null,
@@ -340,46 +341,16 @@ fun WasherCardClickableContent(
     }
     else{
         Text(
-            text = "완료 시간 : ${washerViewModel.getWasherFinishTime(washer.washerId)}",
+            text = "완료 시간 : ${dryerViewModel.getDryerFinishTime(dryer.dryerId)}",
             style = TextStyle(fontSize = 13.sp, fontWeight = FontWeight.Bold)
         )
     }
 }
 
-@Composable
-fun StartWasherAlertDialog(
-    dialogTitle: String,
-    dialogText: String,
-    onConfirm: () -> Unit,
-    onDismiss: () -> Unit) {
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = {
-            Text(text = dialogTitle)
-        },
-        text = {
-            Text(text = dialogText)
-        },
-        confirmButton = {
-            TextButton(onClick =onConfirm) {
-                Text(text = "세탁 시작하기")
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text(text = "세탁 취소하기")
-            }
-        }
-    )
-}
-
-
-
-
 
 
 //Push
-private fun pushWasherCompleted(notification:PushNotification)= CoroutineScope(Dispatchers.IO).launch {
+private fun pushDryerCompleted(notification:PushNotification)= CoroutineScope(Dispatchers.IO).launch {
 
     try {
         val response = RetrofitInstance.api.postNotification(notification)
@@ -400,4 +371,3 @@ private fun pushWasherCompleted(notification:PushNotification)= CoroutineScope(D
     }
 
 }
-
